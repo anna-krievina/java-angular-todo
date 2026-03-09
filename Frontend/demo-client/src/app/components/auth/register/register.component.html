@@ -1,0 +1,43 @@
+<h2>Register</h2>
+<div class="card my-5">
+  <div class="card-body">
+    <form class="form" (ngSubmit)="onSubmit()"#registerForm="ngForm">
+      <div class="form-group row">
+        <div class="col-sm-2">
+          <label for="username">Username</label>
+        </div>
+        <div class="col-sm-10">
+          <input type="text" [(ngModel)]="user.username"
+                 class="form-control"
+                 id="username"
+                 name="username"
+                 required #username="ngModel">
+        </div>
+      </div>
+
+      <div class="form-group row">
+        <div class="col-sm-2">
+          <label for="password">Password</label>
+        </div>
+        <div class="col-sm-10">
+          <input type="password" [(ngModel)]="user.password"
+                 class="form-control"
+                 id="password"
+                 name="password"
+                 required #password="ngModel">
+        </div>
+      </div>
+      <div *ngIf="registerForm.submitted && username.invalid"  class="alert alert-danger">Password is required</div>
+      <div class="form-group row">
+        <div class="col-sm-10">
+          <button type="submit" [disabled]="registerForm.invalid"
+                  class="btn btn-info">Register</button>
+        </div>
+      </div>
+    </form>
+    <br/>
+    <div *ngIf="errorMessage" class="alert alert-danger">
+      {{ errorMessage }}
+    </div>
+  </div>
+</div>

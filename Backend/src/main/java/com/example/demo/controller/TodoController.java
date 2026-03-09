@@ -1,7 +1,10 @@
 package com.example.demo.controller;
 
 import com.example.demo.dto.Todo;
+import com.example.demo.dto.User;
 import com.example.demo.repository.TodoRepository;
+import com.example.demo.repository.UserRepository;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Comparator;
@@ -13,14 +16,16 @@ import java.util.stream.Collectors;
 @RequestMapping("/api")
 public class TodoController {
     private TodoRepository todoRepository;
+    private UserRepository userRepository;
 
-    public TodoController(TodoRepository todoRepository) {
+    public TodoController(TodoRepository todoRepository, UserRepository userRepository) {
         this.todoRepository = todoRepository;
+        this.userRepository = userRepository;
     }
 
     @GetMapping("/todos")
-    public List<Todo> getTodos() {
-        List<Todo> todoList = (List<Todo>) todoRepository.findAll();
+    public List<Todo> getTodos(Authentication authentication) {
+        List<Todo> todoList = todoRepository.findByUserUsername(authentication.getName());;
         // sort by order number
         todoList = todoList.stream()
                 .sorted(Comparator.comparingInt(Todo::getOrderNumber)).collect(Collectors.toList());
@@ -28,16 +33,18 @@ public class TodoController {
     }
 
     @PostMapping("/todos")
-    void saveTodo(@RequestBody Todo todo) {
+    void saveTodo(Authentication authentication, @RequestBody Todo todo) {
         if (todo.getOrderNumber() == 0) {
             // get the latest order number
-            int lastestOrderNumber = getTodos().stream()
+            int lastestOrderNumber = getTodos(authentication).stream()
                     .mapToInt(Todo::getOrderNumber)
                     .max()
                     .orElse(0);
             todo.setOrderNumber(lastestOrderNumber + 1);
         }
-        if (todo.getName() != null) {
+        User user = userRepository.findByUsername(authentication.getName()).orElse(null);
+        todo.setUser(user);
+        if (todo.getName() != null && todo.getUser() != null) {
             todoRepository.save(todo);
         }
     }
